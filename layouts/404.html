@@ -1,12 +1,101 @@
 {{ define "main" }}
 
-<div class="not-found">
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    .parallax-container {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: 0;
+    }
+    .parallax-image-wrap {
+        position: absolute;
+        width: 140vw;
+        height: 100vh;
+        left: -20vw;
+        top: 0;
+        overflow: hidden;
+        pointer-events: none;
+        will-change: transform;
+        transition: transform 0.1s linear;
+    }
+    .parallax-layer {
+        width: 140vw;
+        height: 100vh;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        pointer-events: none;
+        will-change: transform;
+    }
+    .not-found-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        top: 40vh;
+        font-size: 2rem;
+        text-shadow: 0 2px 8px #000;
+    }
+</style>
 
-    <div>
-        <h1> typo? </h1>
-        <p> Click <a href="/">here</a> to return home </p>
+<div class="parallax-container">
+    <div class="parallax-image-wrap" id="wrap5" style="z-index: 1;">
+        <div class="parallax-layer" id="layer5" style="background-image: url('/background/5.png');"></div>
     </div>
-
+    <div class="parallax-image-wrap" id="wrap4" style="z-index: 2;">
+        <div class="parallax-layer" id="layer4" style="background-image: url('/background/4.png');"></div>
+    </div>
+    <div class="parallax-image-wrap" id="wrap3" style="z-index: 3;">
+        <div class="parallax-layer" id="layer3" style="background-image: url('/background/3.png');"></div>
+    </div>
+    <div class="parallax-image-wrap" id="wrap2" style="z-index: 4;">
+        <div class="parallax-layer" id="layer2" style="background-image: url('/background/2.png');"></div>
+    </div>
+    <div class="parallax-image-wrap" id="wrap1" style="z-index: 5;">
+        <div class="parallax-layer" id="layer1" style="background-image: url('/background/1.png');"></div>
+    </div>
+    <div class="parallax-image-wrap" id="wrap0" style="z-index: 6;">
+        <div class="parallax-layer" id="layer0" style="background-image: url('/background/0.png');"></div>
+    </div>
 </div>
+<div class="not-found-content">
+    <h1>404 - You're in the wilderness</h1>
+    <p>But perhaps that's not the worst place to be...</p>
+</div>
+
+<script>
+    // Mouse-move parallax horizontal effect
+    const wraps = [
+        { el: document.getElementById('wrap5'), depth: 0 }, // furthest back, slowest
+        { el: document.getElementById('wrap4'), depth: .1 },
+        { el: document.getElementById('wrap3'), depth: 0.25 },
+        { el: document.getElementById('wrap2'), depth: 0.75 },
+        { el: document.getElementById('wrap1'), depth: 1.5 },
+        { el: document.getElementById('wrap0'), depth: 2 }  // front, fastest
+    ];
+    let mouseX = 0, targetX = 0;
+    function lerp(a, b, n) { return a + (b - a) * n; }
+    function animate() {
+        targetX = lerp(targetX, mouseX, 0.1);
+        wraps.forEach(wrap => {
+            const moveX = targetX * wrap.depth;
+            wrap.el.style.transform = `translateX(${moveX}px)`;
+        });
+        requestAnimationFrame(animate);
+    }
+    window.addEventListener('mousemove', e => {
+        const w = window.innerWidth;
+        mouseX = (e.clientX - w/2) / (w/2) * 80; 
+    });
+    animate();
+</script>
 
 {{ end }}

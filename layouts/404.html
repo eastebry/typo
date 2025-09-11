@@ -1,51 +1,5 @@
 {{ define "main" }}
 
-<style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-    }
-    .parallax-container {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        z-index: 0;
-    }
-    .parallax-image-wrap {
-        position: absolute;
-        width: 140vw;
-        height: 100vh;
-        left: -20vw;
-        top: 0;
-        overflow: hidden;
-        pointer-events: none;
-        will-change: transform;
-        transition: transform 0.1s linear;
-    }
-    .parallax-layer {
-        width: 140vw;
-        height: 100vh;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
-        pointer-events: none;
-        will-change: transform;
-    }
-    .not-found-content {
-        position: relative;
-        z-index: 2;
-        color: white;
-        text-align: center;
-        top: 40vh;
-        font-size: 2rem;
-        text-shadow: 0 2px 8px #000;
-    }
-</style>
-
 <div class="not-found-content">
     <h1>404 - You're in the wilderness</h1>
     <p>But perhaps that's not the worst place to be...</p>

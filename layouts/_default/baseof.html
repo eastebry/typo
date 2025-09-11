@@ -14,9 +14,7 @@
 
 <body class="{{ $theme }}">
 
-  {{ if or .IsHome (eq .Kind "404") .Params.parallax_bg }}
-    {{ partial "parallax-bg.html" . }}
-  {{ end }}
+  {{ partial "parallax-bg.html" . }}
   <div class="content">
     <header>
       {{ partial "header.html" . }}

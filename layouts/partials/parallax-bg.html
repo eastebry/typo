@@ -28,6 +28,14 @@
     pointer-events: none;
     will-change: transform;
 }
+/* start hidden and fade in when the image is ready */
+.parallax-layer {
+    opacity: 0;
+    transition: opacity 1500ms ease-in-out; /* slower fade */
+}
+.parallax-layer.loaded {
+    opacity: 1;
+}
 </style>
 <div class="parallax-container">
     <div class="parallax-image-wrap" id="wrap5" style="z-index: 1;">
@@ -74,4 +82,62 @@
         mouseX = (e.clientX - w/2) / (w/2) * 80; 
     });
     animate();
+
+    // Fade-in background images after the user moves the mouse and the images are loaded.
+    (function preloadAndWaitForMouse() {
+        const layers = Array.from(document.querySelectorAll('.parallax-layer'));
+        const state = layers.map(layer => ({ el: layer, loaded: false }));
+
+        // Preload backgrounds
+        state.forEach(s => {
+            const bg = s.el.style.backgroundImage;
+            if (!bg) {
+                s.loaded = true;
+                return;
+            }
+            const match = bg.match(/url\(["']?(.*?)["']?\)/);
+            if (!match) {
+                s.loaded = true;
+                return;
+            }
+            const url = match[1];
+            const img = new Image();
+            img.onload = () => { s.loaded = true; }; 
+            img.onerror = () => { s.loaded = true; };
+            img.src = url;
+        });
+
+        // Reveal only after first meaningful mousemove
+        let userMoved = false;
+        function tryReveal() {
+            if (!userMoved) return;
+            // only reveal layers that are marked loaded
+            state.forEach(s => {
+                if (s.loaded) s.el.classList.add('loaded');
+            });
+        }
+
+        function onFirstMove(e) {
+            // ignore tiny involuntary moves — only treat as interaction when movement > 2px
+            if (!window._parallaxLastMouse) window._parallaxLastMouse = { x: e.clientX, y: e.clientY };
+            const last = window._parallaxLastMouse;
+            const dx = Math.abs(e.clientX - last.x);
+            const dy = Math.abs(e.clientY - last.y);
+            if (dx + dy < 3) return; // too small
+            userMoved = true;
+            window.removeEventListener('mousemove', onFirstMove);
+            tryReveal();
+        }
+
+        // Watch for loads happening after the mouse move
+        const observerInterval = setInterval(() => {
+            if (userMoved) {
+                state.forEach(s => { if (s.loaded) s.el.classList.add('loaded'); });
+                // If all loaded, stop polling
+                if (state.every(s => s.loaded)) clearInterval(observerInterval);
+            }
+        }, 200);
+
+        window.addEventListener('mousemove', onFirstMove);
+    })();
 </script>

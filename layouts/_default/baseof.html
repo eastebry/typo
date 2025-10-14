@@ -13,8 +13,9 @@
 {{ end }}
 
 <body class="{{ $theme }}">
-
+{{ if or (not (.Param "hideBg")) .IsHome }}
   {{ partial "parallax-bg.html" . }}
+{{ end }}
   <div class="content">
     <header>
       {{ partial "header.html" . }}

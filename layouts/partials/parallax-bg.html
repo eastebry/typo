@@ -70,16 +70,22 @@
     let mouseX = 0, targetX = 0;
     function lerp(a, b, n) { return a + (b - a) * n; }
     function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+    let maxTargetX = 0;
     function updateMaxShift() {
         wraps.forEach(wrap => {
             const width = wrap.el.getBoundingClientRect().width;
             wrap.maxShift = Math.max(0, (width - window.innerWidth) / 2);
         });
+        const limits = wraps
+            .filter(wrap => wrap.depth > 0)
+            .map(wrap => wrap.maxShift / wrap.depth);
+        maxTargetX = limits.length ? Math.min(...limits) : 0;
     }
     function animate() {
         targetX = lerp(targetX, mouseX, 0.1);
+        const clampedTargetX = clamp(targetX, -maxTargetX, maxTargetX);
         wraps.forEach(wrap => {
-            const moveX = clamp(targetX * wrap.depth, -wrap.maxShift, wrap.maxShift);
+            const moveX = clampedTargetX * wrap.depth;
             wrap.el.style.transform = `translateX(${moveX}px)`;
         });
         requestAnimationFrame(animate);

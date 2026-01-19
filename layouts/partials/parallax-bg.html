@@ -60,19 +60,26 @@
 <script>
     // Mouse-move parallax horizontal effect
     const wraps = [
-        { el: document.getElementById('wrap5'), depth: 0 }, // furthest back, slowest
-        { el: document.getElementById('wrap4'), depth: .1 },
-        { el: document.getElementById('wrap3'), depth: 0.25 },
-        { el: document.getElementById('wrap2'), depth: 0.75 },
-        { el: document.getElementById('wrap1'), depth: 1.5 },
-        { el: document.getElementById('wrap0'), depth: 2 }  // front, fastest
+        { el: document.getElementById('wrap5'), depth: 0, maxShift: 0 }, // furthest back, slowest
+        { el: document.getElementById('wrap4'), depth: 0.1, maxShift: 0 },
+        { el: document.getElementById('wrap3'), depth: 0.25, maxShift: 0 },
+        { el: document.getElementById('wrap2'), depth: 0.75, maxShift: 0 },
+        { el: document.getElementById('wrap1'), depth: 1.5, maxShift: 0 },
+        { el: document.getElementById('wrap0'), depth: 2, maxShift: 0 }  // front, fastest
     ];
     let mouseX = 0, targetX = 0;
     function lerp(a, b, n) { return a + (b - a) * n; }
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+    function updateMaxShift() {
+        wraps.forEach(wrap => {
+            const width = wrap.el.getBoundingClientRect().width;
+            wrap.maxShift = Math.max(0, (width - window.innerWidth) / 2);
+        });
+    }
     function animate() {
         targetX = lerp(targetX, mouseX, 0.1);
         wraps.forEach(wrap => {
-            const moveX = targetX * wrap.depth;
+            const moveX = clamp(targetX * wrap.depth, -wrap.maxShift, wrap.maxShift);
             wrap.el.style.transform = `translateX(${moveX}px)`;
         });
         requestAnimationFrame(animate);
@@ -81,6 +88,8 @@
         const w = window.innerWidth;
         mouseX = (e.clientX - w/2) / (w/2) * 80; 
     });
+    updateMaxShift();
+    window.addEventListener('resize', updateMaxShift);
     animate();
 
     // Fade-in background images after the user moves the mouse and the images are loaded.

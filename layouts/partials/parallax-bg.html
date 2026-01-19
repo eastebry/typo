@@ -68,6 +68,17 @@
         { el: document.getElementById('wrap0'), depth: 2 }  // front, fastest
     ];
     let mouseX = 0, targetX = 0;
+    let aspectScale = 1;
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+    function updateAspectScale() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const minScale = 0.35;
+        const maxScale = 1;
+        const minAspect = 0.75;
+        const maxAspect = 1.6;
+        const normalized = clamp((aspect - minAspect) / (maxAspect - minAspect), 0, 1);
+        aspectScale = minScale + (maxScale - minScale) * normalized;
+    }
     function lerp(a, b, n) { return a + (b - a) * n; }
     function animate() {
         targetX = lerp(targetX, mouseX, 0.1);
@@ -79,8 +90,10 @@
     }
     window.addEventListener('mousemove', e => {
         const w = window.innerWidth;
-        mouseX = (e.clientX - w/2) / (w/2) * 80; 
+        mouseX = (e.clientX - w/2) / (w/2) * 80 * aspectScale;
     });
+    window.addEventListener('resize', updateAspectScale);
+    updateAspectScale();
     animate();
 
     // Fade-in background images after the user moves the mouse and the images are loaded.

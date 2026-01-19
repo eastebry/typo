@@ -68,9 +68,27 @@
         { el: document.getElementById('wrap0'), depth: 2 }  // front, fastest
     ];
     let mouseX = 0, targetX = 0;
+    let tiltX = 0;
+    let lastGamma = 0;
+    let useTilt = false;
+    let aspectScale = 1;
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+    function updateAspectScale() {
+        const aspect = window.innerWidth / window.innerHeight;
+        const minScale = 0.35;
+        const maxScale = 1;
+        const minAspect = 0.75;
+        const maxAspect = 1.6;
+        const normalized = clamp((aspect - minAspect) / (maxAspect - minAspect), 0, 1);
+        aspectScale = minScale + (maxScale - minScale) * normalized;
+        if (useTilt) {
+            updateTiltX(lastGamma);
+        }
+    }
     function lerp(a, b, n) { return a + (b - a) * n; }
     function animate() {
-        targetX = lerp(targetX, mouseX, 0.1);
+        const inputX = useTilt ? tiltX : mouseX;
+        targetX = lerp(targetX, inputX, 0.1);
         wraps.forEach(wrap => {
             const moveX = targetX * wrap.depth;
             wrap.el.style.transform = `translateX(${moveX}px)`;
@@ -79,8 +97,43 @@
     }
     window.addEventListener('mousemove', e => {
         const w = window.innerWidth;
-        mouseX = (e.clientX - w/2) / (w/2) * 80; 
+        mouseX = (e.clientX - w/2) / (w/2) * 80 * aspectScale;
     });
+    function updateTiltX(gamma) {
+        const normalized = clamp(gamma / 30, -1, 1);
+        tiltX = normalized * 80 * aspectScale;
+    }
+    function handleDeviceOrientation(event) {
+        if (typeof event.gamma !== 'number') return;
+        useTilt = true;
+        lastGamma = event.gamma;
+        updateTiltX(lastGamma);
+    }
+    function requestTiltPermission() {
+        if (typeof DeviceOrientationEvent === 'undefined') return;
+        if (typeof DeviceOrientationEvent.requestPermission !== 'function') {
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+            return;
+        }
+        const onFirstInteraction = () => {
+            DeviceOrientationEvent.requestPermission()
+                .then(state => {
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', handleDeviceOrientation);
+                    }
+                })
+                .catch(() => {});
+            window.removeEventListener('click', onFirstInteraction);
+            window.removeEventListener('touchstart', onFirstInteraction);
+        };
+        window.addEventListener('click', onFirstInteraction, { once: true });
+        window.addEventListener('touchstart', onFirstInteraction, { once: true });
+    }
+    window.addEventListener('resize', updateAspectScale);
+    if (window.matchMedia('(pointer: coarse)').matches) {
+        requestTiltPermission();
+    }
+    updateAspectScale();
     animate();
 
     // Fade-in background images after the user moves the mouse and the images are loaded.
